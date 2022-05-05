@@ -62,12 +62,14 @@ class State(object):
         pass
     def Execute (self):                                  
         # Battery check on all state executions
-        #sensor = bot.get_sensors()
-        #levelCharge = batteryCheck(sensor.battery_charge)
+        sensor = bot.get_sensors()
+        levelCharge = batteryCheck(sensor.battery_charge)
+
         # Update DB about charge level
         database = firestore.client()
         result = database.collection('robots').document("1234").get({"battery"}).to_dict() # comment this out
         database.collection('robots').document("1234").update({"battery": result['battery']})
+
     def Exit(self):
         pass
 
@@ -81,8 +83,8 @@ class TurnRobotOn(State):
         super(TurnRobotOn, self).Enter()
 
         # Start romba and set internal safe state
-        #bot.start()
-        #bot.safe()
+        bot.start()
+        bot.safe()
 
         # Let App know we can move
         database = firestore.client()  
@@ -97,7 +99,7 @@ class TurnRobotOn(State):
         # Undocking
         for lft, rht, dt, s in path:
             print(s)
-            #bot.drive_direct(lft, rht)
+            bot.drive_direct(lft, rht)
             sleep(dt)
 
     def Execute(self):
@@ -129,21 +131,28 @@ class TurnRobotOff(State):
     def Enter(self):
         print("Starting to dock!")
         super(TurnRobotOff, self).Enter()
+
         # Send command for Roomba to start docking
         bot.SCI.write(143)
-        print("DOCK Mode: Docking")
-        #sleep(18)
+        print("Docking")
 
         chargeFlag = True
 
-        while chargeFlag:
+        while (chargeFlag):
             sensor = bot.get_sensors()
             chargestate = sensor.charger_state
-            if (chargestate):
-                sleep(1)
-                pass
+        #    print(chargestate)
+            if(chargeFlag >=0 and chargeFlag <=6):
+                if (chargestate == 2):
+                    chargeFlag = False
+                    #print(chargestate)
+                else:
+                    #print(chargestate)
+                    sleep(1)
             else:
-                chargeFlag = False
+                #print(chargestate)
+                sleep(1)        
+                pass
         
         self.FSM.run = False
         database = firestore.client()  
@@ -283,8 +292,9 @@ class FREDRobot(Char):
 # Main
 if __name__ == '__main__':
     # Create a Create2.
-    #port = "/dev/ttyUSB0"  # locations for out serial
-    #bot = Create2(port)
+    #port = "/dev/ttyUSB0"  # serial for raspi
+    port = "COM9"           # serial for my laptop
+    bot = Create2(port)
 
     # Open a serial connection to Roomba
     # Some functions are not implemented by PyCreate2

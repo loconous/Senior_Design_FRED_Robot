@@ -4,12 +4,13 @@ from time import sleep
 import serial
 
 # Create a Create2.
-port = "/dev/ttyUSB0"  # locations for out serial
+#port = "/dev/ttyUSB0"  # for the raspi
+port = "COM9"   # for my laptop
 bot = Create2(port)
 
 # define a movement path
 path = [
-    [-200,-200, 4, 'for'],
+    [-200,-200, 3, 'for'],
     [-100, 100, 1.6, 'turn'],
     [   0,   0, 1, 'stop']
 ]
@@ -56,14 +57,42 @@ print("DOCK Mode: Docking")
 
 chargeFlag = True
 
-while chargeFlag:
+while (chargeFlag):
     sensor = bot.get_sensors()
     chargestate = sensor.charger_state
-    if (chargestate):
-        sleep(1)
-        pass
+#    print(chargestate)
+    if(chargeFlag >=0 and chargeFlag <=6):
+        if (chargestate == 2):
+            chargeFlag = False
+            #print(chargestate)
+        else:
+            #print(chargestate)
+            sleep(1)
     else:
-        chargeFlag = False
+        #print(chargestate)
+        sleep(1)        
+        pass
+
+# while (chargeFlag):
+#     sensor = bot.get_sensors()
+#     chargestate = sensor.charger_state
+#     print(chargestate)
+#     if (chargestate != 0 and chargestate != 99):
+#         chargeFlag = False
+#     elif (chargestate == 99):
+#         bot.SCI.write(143)
+#     else:
+#         sleep(1)
+
+
+#count = 0
+    # else:
+    #     if (count == 45):
+    #         bot.SCI.write(143)
+    #         count = 0
+    #     else:
+    #         count += 1
+    #         sleep(1)
 
 print('shutting down ... bye')
 bot.drive_stop()
