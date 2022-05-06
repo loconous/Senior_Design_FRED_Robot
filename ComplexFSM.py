@@ -108,6 +108,7 @@ class TurnRobotOn(State):
     def Execute(self):
         super(TurnRobotOn, self).Execute()
         print("Hello I'm Alfred Botley!")
+        sleep(3)
 
         # Check state from database
         database = firestore.client()                                       
@@ -146,7 +147,7 @@ class TurnRobotOff(State):
             sensor = bot.get_sensors()
             chargestate = sensor.charger_state
             print(chargestate)
-            if(chargeFlag >=0 and chargeFlag <=6):
+            if(chargestate >= 0 and chargestate <= 6):
                 if (chargestate != 0):
                     chargeFlag = False
                     print(chargestate)
@@ -178,6 +179,7 @@ class TurnRobotOff(State):
     def Execute(self):
         super(TurnRobotOff, self).Execute()
         print("Robot is off!")
+        sleep(1)
 
         # Check state from database
         database = firestore.client()                                       
@@ -190,8 +192,6 @@ class TurnRobotOff(State):
             else:
                 self.FSM.ToTransition("toSleep")
 
-        sleep(1)
-
     def Exit(self):
         print("Waking up!")
 
@@ -203,7 +203,7 @@ class Sleep(State):
     def Enter(self):
         print("Starting to Sleep")
         super(Sleep, self).Enter()
-        #bot.drive_stop()
+        bot.drive_stop()
         database = firestore.client()  
         database.collection('robots').document("1234").update({"allowMovement": False})
 
