@@ -8,24 +8,24 @@ import serial
 port = "COM9"   # for my laptop
 bot = Create2(port)
 
-# define a movement path
-path = [
-    [-200,-200, 3, 'for'],
-    [-100, 100, 1.6, 'turn'],
-    [   0,   0, 1, 'stop']
-]
+# # define a movement path
+# path = [
+#     [-200,-200, 3, 'for'],
+#     [-100, 100, 1.6, 'turn'],
+#     [   0,   0, 1, 'stop']
+# ]
 
-#bot.start()
-bot.SCI.write(128)
+bot.start()
+# bot.SCI.write(128)
 print("START Mode: Sucessful")
 bot.safe()
 print("SAFE Mode: Sucessful")
 
-# path to move
-for lft, rht, dt, s in path:
-    print(s)
-    bot.drive_direct(lft, rht)
-    sleep(dt)
+# # path to move
+# for lft, rht, dt, s in path:
+#     print(s)
+#     bot.drive_direct(lft, rht)
+#     sleep(dt)
 
 sensor = bot.get_sensors()
 levelCharge = sensor.battery_charge
@@ -51,27 +51,27 @@ print(chargestate)
 # sleep(0.1)
 # how_long = bot.playSong(song_num)
 
-bot.SCI.write(143)
-print("DOCK Mode: Docking")
-#sleep(18)
+# bot.SCI.write(143)
+# print("DOCK Mode: Docking")
+# #sleep(18)
 
-chargeFlag = True
+# chargeFlag = True
 
-while (chargeFlag):
-    sensor = bot.get_sensors()
-    chargestate = sensor.charger_state
-#    print(chargestate)
-    if(chargeFlag >=0 and chargeFlag <=6):
-        if (chargestate == 2):
-            chargeFlag = False
-            #print(chargestate)
-        else:
-            #print(chargestate)
-            sleep(1)
-    else:
-        #print(chargestate)
-        sleep(1)        
-        pass
+# while (chargeFlag):
+#     sensor = bot.get_sensors()
+#     chargestate = sensor.charger_state
+# #    print(chargestate)
+#     if(chargeFlag >=0 and chargeFlag <=6):
+#         if (chargestate == 2):
+#             chargeFlag = False
+#             #print(chargestate)
+#         else:
+#             #print(chargestate)
+#             sleep(1)
+#     else:
+#         #print(chargestate)
+#         sleep(1)        
+#         pass
 
 # while (chargeFlag):
 #     sensor = bot.get_sensors()
@@ -95,7 +95,8 @@ while (chargeFlag):
     #         sleep(1)
 
 print('shutting down ... bye')
-bot.drive_stop()
+bot.SCI.write(173)
+#bot.drive_stop()
 sleep(0.1)
 
 # Close the connection

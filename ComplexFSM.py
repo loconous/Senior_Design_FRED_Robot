@@ -12,7 +12,7 @@ import sys
 from random import randint
 from time import sleep 
 from  pycreate2 import Create2
-import serial
+#import serial
 import firebase_admin
 from firebase_admin import credentials, firestore
 
@@ -22,7 +22,8 @@ from firebase_admin import credentials, firestore
 
 def batteryCheck(chargeLevel):
     charge = chargeLevel/65535
-    return charge
+    chargeInput = round(charge, 2)
+    return chargeInput
 
 ##==================================================================================
 ## TRANSITIONS
@@ -59,16 +60,18 @@ class State(object):
         self.FSM = FSM
 
     def Enter(self):
-        pass
-    def Execute (self):                                  
         # Battery check on all state executions
         sensor = bot.get_sensors()
         levelCharge = batteryCheck(sensor.battery_charge)
-
+        print(levelCharge)
+        sleep(2)
         # Update DB about charge level
         database = firestore.client()
-        result = database.collection('robots').document("1234").get({"battery"}).to_dict() # comment this out
-        database.collection('robots').document("1234").update({"battery": result['battery']})
+        #result = database.collection('robots').document("1234").get({"battery"}).to_dict() # comment this out
+        database.collection('robots').document("1234").update({"battery": levelCharge})
+
+    def Execute (self):                                  
+        pass
 
     def Exit(self):
         pass
@@ -139,22 +142,26 @@ class TurnRobotOff(State):
         chargeFlag = True
 
         while (chargeFlag):
+            chargestate = 0
             sensor = bot.get_sensors()
             chargestate = sensor.charger_state
-        #    print(chargestate)
+            print(chargestate)
             if(chargeFlag >=0 and chargeFlag <=6):
-                if (chargestate == 2):
+                if (chargestate != 0):
                     chargeFlag = False
-                    #print(chargestate)
+                    print(chargestate)
+                    print("Docking Succesful!")
+                    sleep(5)
                 else:
-                    #print(chargestate)
-                    sleep(1)
+                    print(chargestate)
+                    sleep(2)
             else:
-                #print(chargestate)
-                sleep(1)        
-                pass
+                bot.drive_stop()
+                print(chargestate)
+                sleep(8)
+                bot.SCI.write(143)
         
-        self.FSM.run = False
+        #self.FSM.run = False
         database = firestore.client()  
         database.collection('robots').document("1234").update({"allowMovement": False})
 
@@ -163,7 +170,9 @@ class TurnRobotOff(State):
         sleep(0.1)
 
         # Close the connection
-        bot.power()
+        bot.power()        # Will set back to passive mode to avoid discharge
+
+        print("Power off")
 
 
     def Execute(self):
@@ -180,6 +189,8 @@ class TurnRobotOff(State):
                 self.FSM.ToTransition("toTurnRobotOn")
             else:
                 self.FSM.ToTransition("toSleep")
+
+        sleep(1)
 
     def Exit(self):
         print("Waking up!")
@@ -317,6 +328,8 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt: # If CTRL+C is pressed, exit cleanly:
         print('Interrupted')
+        bot.SCI.write(173)  # This is the actual close command, it prevents discharge
+
         try:
             sys.exit(0)
         except SystemExit:
